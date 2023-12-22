@@ -1,0 +1,107 @@
+---
+title: "REFE_CLBD"
+output: html_document
+date: '2023-05-11'
+---
+
+
+OK so how do we convert this to a very clean piece of code. well we need functions
+
+# Import libraries
+
+```{r}
+library(lme4)
+library(survival)
+library(tidyverse)
+library(haven)
+
+```
+
+# Load in Data. 
+
+Combine the smaller datasets into one large one:
+
+```{r}
+
+# Homogeneous data case:
+
+
+# Heterogeneous data case:
+
+
+
+```
+
+
+# Define constants based on SAS data table and reduce df size
+
+```{r}
+
+reduce_df_homogeneous <- function(){
+  ndats <- 1000 #simdat$ndats[1]
+  npergrp <- simdat$npergrp[1] # then 2 groups
+  nsubj <- simdat$nsubj[1] # so 200 subjects total, but we aren't really using/dividing the groups here
+  ssbetaWS <- simdat$ssbeta[1] #change back to ssbetaWS
+  all_ssbetaBS <- c(simdat$ssbetaBS1[1], simdat$ssbetaBS2[1], simdat$ssbetaBS3[1]) # k
+  ntimepoints <- simdat$ntime[1]
+  icc <- simdat$icc[1]
+  all_covs <- c(simdat$cov1[1], simdat$cov2[1], simdat$cov3[1]) # j
+  varerr <- pi^2 / 3  # note that atan(1) = pi/4 so atan(1) * 4 = pi. varerr = (atan(1) * 4)**2 / 3
+  varsub <- varerr * (icc / (1-icc)) # subject variance given the icc and error variance (sigma squared v given icc and sigma squared e).
+  
+  sdsub <- sqrt(varsub)
+  
+  simdat_new <- simdat[,-c(1:16, 20)]
+}
+
+
+reduce_df_heterogeneous <- function(){
+  ndats <- 1000 #simdat$ndats[1] # but really its 500
+  npergrp <- simdat$npergrp[1] # then 2 groups
+  nsubj <- simdat$nsubj[1] # so 200 subjects total, but we aren't really using/dividing the groups here
+  ssbetaWS <- simdat$ssbetaWS[1]
+  all_ssbetaBS <- c(simdat$`ssbetaBS[1]`[1], simdat$`ssbetaBS[2]`[1], simdat$`ssbetaBS[3]`[1]) # k
+  ntimepoints <- simdat$ntime[1]
+  all_REcorrs <- unique(simdat$`REcorr[j]`) # j
+  all_covs <- c(simdat$`cov[1]`[1], simdat$`cov[2]`[1], simdat$`cov[3]`[1]) # c
+  
+  # varerr <- pi^2 / 3  # note that atan(1) = pi/4 so atan(1) * 4 = pi. varerr = (atan(1) * 4)**2 / 3
+  # 
+  # varsub <- varerr * (icc / (1-icc)) # subject variance given the icc and error variance (sigma squared v given icc and sigma squared e).
+  # 
+  # sdsub <- sqrt(varsub)
+  
+  simdat_new <- simdat[,-c(1:17, 25)]
+  
+}
+
+```
+
+
+
+```{r}
+
+
+
+```
+
+
+```{r}
+
+
+
+```
+
+
+```{r}
+
+
+
+```
+
+```{r}
+
+
+
+```
+
