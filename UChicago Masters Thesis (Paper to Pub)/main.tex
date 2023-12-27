@@ -1,0 +1,580 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{multirow}
+\usepackage{caption}
+\captionsetup[table]{justification=centering, margin = 2cm}
+\usepackage{xcolor}
+\usepackage{lipsum} 
+\usepackage{amsmath}
+\usepackage{placeins}
+\usepackage{appendix}
+\usepackage{verbatim}
+\usepackage{natbib}
+
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+       \vspace{0cm}
+       \hspace{0cm}
+       \textbf{\underline{Master’s Paper of the Department of Statistics, the University of Chicago}}
+    
+        
+       \vspace{0.25cm}
+        (Internal departmental document only, not for circulation. Anyone wishing to publish or cite any portion therein must have the express, written permission of the author.)
+            
+       \vspace{3cm}
+    
+       \Huge{\textbf{Fixed-Effects vs. Random-Effects Models for Clustered Longitudinal Binary Outcomes}}
+       
+       \vspace{3cm}
+       \huge{Madhuri Raman}
+
+       \vspace{3cm}
+
+       
+       \LARGE{Advisors: Dr. Donald Hedeker, Dr. Robert D. Gibbons, \\ Dr. Dan L. Nicolae}
+  
+       \vspace{2cm}
+
+        \LARGE{Approved:}  
+        \rule{9cm}{0.15mm} 
+        \vspace{0.1cm}
+        \newline
+        
+        % \rule{11.5cm}{0.15mm}
+        \vspace{0.1cm}
+        \LARGE{Date:}
+        \rule{10cm}{0.15mm}
+
+        \vspace{1cm}
+        \LARGE{April 12, 2023}
+ 
+        
+   \end{center}
+\end{titlepage}
+
+\begin{abstract}
+
+    In statistical studies of correlated data, there is often a debate over whether to use fixed-effects or random-effects models. We perform two simulation studies to empirically compare four different models of clustered longitudinal binary data. The goal of these studies is twofold: (1) to compare the four models in terms of estimation of the within-subject effect and (2) to evaluate each model's performance given a homogeneous vs. heterogeneous treatment effect. Collectively, the evidence suggests that under a homogeneous treatment effect, the fixed-effects and random-effects solutions both perform well in estimating the within-subject effect. However, when there is heterogeneity in the treatment effect, the random-effects models, particularly with a decomposition of between-subject and within-subject effects, are superior to the fixed-effects approach, demonstrating that a fixed-effects solution cannot handle treatment heterogeneity in the data.  
+\end{abstract}
+
+\tableofcontents
+\begin{appendices}
+
+\end{appendices}
+\newpage
+
+
+
+\section{Introduction and Background}
+    In this paper, we are interested in comparing different regression methods for modeling clustered longitudinal binary data. First, we will introduce logistic regression and mixed-effects models which will serve as the framework for the four models we will develop and test in this paper. Next, we define key terms and ideas that will feature in our hypothesized models for testing, including the between-within decomposition and homogeneous vs. heterogeneous treatment effects. Finally, we will describe two simulation studies performed to empirically evaluate the statistical properties of each model on clustered longitudinal binary data. The goal of these studies is to compare the four models' performances given homogeneous and heterogeneous treatment effects. 
+
+    \subsection{Clustered Longitudinal Binary Data}
+    In medical and public health fields, studies often involve experimental units that are each measured multiple times in a data set. This is called a repeated-measures design. Because each subject (level 2 units), has multiple data points, the measurements (level 1 units) for a given subject are clustered and correlated by nature. For example, if we record a person's weight five times, all of these measurements depend on the same characteristics of that person. Thus, all longitudinal data will be clustered with some correlation $\rho$ between each unit's measurements. In this paper, we are interested in clustered longitudinal repeated measurements of a binary outcome.
+
+    \subsection{Logistic Regression}
+    Categorical data are common in health-related fields. As opposed to continuous numerical outcomes, such as weight or heart rate, a binary categorical outcome can take the form of a yes/no answer, success/failure indicators, or presence/absence indicators, to name a few examples. Logistic regression is a useful type of regression to model binary response data since it is linear in the predictors and easily interpretable in terms of log odds [\citealt{agresti2015foundations}].
+    
+    Let $\pi_i$ represent the probability of outcome $Y=1$ and $1-\pi_i$ be the probability of $Y=0$. Let $\vec{x_i} = [1, x_{i1},...,x_{ip}]$ represent the set of covariates and $\vec{\beta} = [\beta_0,...,\beta_p]$ be the respective regression coefficients. The odds of outcome $Y = 1$ are defined as the ratio: \begin{equation}P(Y=1)=\frac{\pi_i}{1-\pi_i}\end{equation}
+    so the log odds, also called the logit, are:
+    \begin{equation} log\left(\frac{\pi_i}{1-\pi_i}\right) \end{equation} 
+    The logistic cumulative distribution function is: \begin{equation}
+        \psi(z) = \frac{1}{1+exp(-z)}
+    \end{equation} 
+    The logistic regression model is then defined as the following [\citealt{gibbons2006longitudinal}]: 
+    \begin{equation}
+    P(Y_i = 1) = \pi_i = \frac{exp(x_i^T\beta)}{1+exp(x_i^T\beta)} = \frac{1}{1+exp(-x_i^T\beta)} = \psi(x_i^T\beta)
+    \end{equation} 
+
+       
+    \subsection{Conditional Logistic Regression}
+    A key assumption for the traditional logistic regression model is that the observations must be independent of each other. However, in the case of longitudinal data, as discussed earlier, the data are often correlated by nature and violate the independence assumption. To rectify this while maintaining a fixed-effects solution, we can use a conditional logistic regression model [\citealt{agresti2015foundations}]. This model assumes stratification of the data by computing the conditional likelihood of the data given each stratum and maximizing the overall conditional likelihood to optimize the parameters. The model is specified by: 
+    \begin{equation}
+    P(Y_i = 1 | x_i) = \frac{exp(x_i^T\beta)}{1+exp(x_i^T\beta)} = \psi(x_i^T\beta)
+    \end{equation} 
+    
+    \subsection{Generalized Linear Mixed Models} 
+
+    Mixed-effects regression models are a well-known alternative to the fixed-effects approach for modeling clustered data. Mixed-effects models incorporate both fixed-effects and random-effects to represent the correlations in the data. We combine this formulation with logistic regression since we are interested in binary outcomes. 
+    \subsubsection{Treatment Effect Homogeneity and Heterogeneity}
+    In this paper, we are also concerned with the effects of homogeneous vs. heterogeneous treatments. Homogeneous treatment effects refer to a treatment whose effect is constant for all subjects. For example, if the impact of a particular drug on seizure outcomes is the same for all individuals, that is a homogeneous treatment effect. On the other hand, it is also possible for a drug to have different average effects for different subjects. In this case, the treatment effect is not constant, i.e. heterogeneous. We can easily model the difference between homogeneous and heterogeneous treatment effects via random subject effects. Note that we are assuming that the binary treatment variable varies over time within individuals, so there may also be a random effect of time. However, this is not the case in a randomized controlled trial with subjects randomly assigned to a drug or placebo, since the treatment is time-invariant, with no random effect of time. We use a random intercept model for homogeneous data and a random intercept and slope model for heterogeneous data with random subject effects. 
+
+    \noindent Random Intercept Model:
+    \begin{equation}
+        Y_{ij}^* = x_i^T\beta + v_0 + \epsilon_{ij} \;\;\;\; \text{[Homogeneous Treatment Effect]}
+    \end{equation}
+    Random Intercept and Slope Model:
+    \begin{equation}
+        Y_{ij}^* = x_i^T\beta + v_0 + v_1x_{ij} + \epsilon_{ij} \;\;\;\; \text{[Heterogeneous Treatment Effect]}
+    \end{equation} 
+    where $Y_{ij}^*$ is the latent response probability (i.e. $P(Y_{ij} = 1)$) and $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
+                    \begin{cases}
+                        0 & \text{if } Y_{ij }^* < 0.5\\    
+                        1 & \text{if } Y_{ij }^* \ge 0.5    
+                    \end{cases}$ 
+
+    The random intercept model (Equation 6) adds a constant term $v_0 \sim N(0, \sigma^2_v)$ to the intercept to account for the correlation between data points and homogeneous treatment effects. The random intercept and slope model (Equation 7) additionally includes a random slope term $v_1x_{ij}$ which varies the overall slope to model treatment heterogeneity. In this case, the random intercept and slope are jointly distributed from a bivariate normal distribution with mean 0 and covariance matrix defined by $\sigma^2_{v_0}, \sigma^2_{v_1},$ and $corr(v_0, v_1)$. The variances $\sigma^2_{v_0}$ and $\sigma^2_{v_1}$ are dependent on the variable correlations between data points for each individual [\citealt{gibbons2006longitudinal}]. 
+    
+    \subsection{Between-Within Decomposition} 
+
+    In the context of correlated data, specifically with a dynamic time-varying treatment, we explore the estimation of between-subject effects and within-subject effects [\citealt{10.2307/3109770}]. We can decompose the overall treatment effect $\beta x_{ij}$ into two uniquely estimable components: (1) the between-subject component $ \beta_{BS}\bar{x_i}$ and (2) the within-subject component $\beta_{WS}(x_{ij} - \bar{x_i})$. The mixed-effects model with between-within decomposition is the following: \begin{equation} Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ij} \end{equation} which we will test in two simulation studies in this paper. \\
+
+    \subsubsection{Adaptive Centering Approach}
+    \noindent The adaptive centering approach is a variation of the between-within decomposition of mixed-effect regression which models only the within-subject component of the overall treatment effect [\citealt{10.1162/edfp.2009.4.4.468}]. This model is: \begin{equation} Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ij}\end{equation}
+    
+    
+\section{Methodology}
+    We conducted two simulation studies to evaluate the performance of four different models in estimating the within-subject effect. For each study, we worked with a large meta-dataset of 1000 datasets constructed under several different parameter specifications. Each dataset consists of 200 subjects repeatedly measured at 10 time points. In the first study, we assume a homogeneous treatment effect, where the effect of the treatment is the same for all individuals, who are each considered a cluster in this context. In the second study, we modify this assumption to account for treatment effect heterogeneity. Our goal in doing so is to not only compare the different models to each other but also to see how each performs on the data given homogeneous vs. heterogeneous treatment effects. 
+    \subsection{Models of Interest}
+        Using R Statistical Software (v4.1.2; \citealt{r-main}), we fit four models of interest to the data generated under both homogeneous and heterogeneous treatment effects. The conditional logistic regression model was implemented via clogit in the survival R package (v3.2.13; \citealt{survival-package}) while the three mixed-effects models were implemented using the glmer function from the lme4 R package (v1.1.27.1; \citealt{lme4}). Below we specify the models in each of these cases:
+        
+        
+        \begin{itemize}
+            \item Conditional Logistic Regression \\
+                \begin{equation} Y_{ij}^* = \frac{exp(x_{ij}^T\beta)}{1+exp(x_{ij}^T\beta)} \end{equation}
+            \item Random Effects Model without BS/WS Decomposition (assumes BS = WS effect)
+                \begin{itemize}
+                \item Homogeneous:
+                \begin{equation}
+                    Y_{ij}^* = \beta_{0} + \beta x_{ij} + v_i + \epsilon_{ijk} 
+                \end{equation}
+                \item Heterogeneous:
+                \begin{equation}
+                 Y_{ij}^* = \beta_{0} + \beta x_{ij} + v_{0i} + v_{1i}x_{ij} + \epsilon_{ijk} 
+                 \end{equation}
+                 \end{itemize}
+            \item Random Effects Model with BS/WS Decomposition
+                \begin{itemize}
+                    \item Homogeneous:
+                    \begin{equation}
+                 Y_{ij}^* = \beta_{0} + \beta_{BS}(\bar{x_i}) + \beta_{WS}(x_{ij} - \bar{x_i}) + v_i + \epsilon_{ijk}
+                 \end{equation}
+                    \item Heterogeneous: 
+                    \begin{equation}
+                 Y_{ij}^* = \beta_{0} + \beta_{BS}(\bar{x_i}) + \beta_{WS}(x_{ij} - \bar{x_i}) + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ijk} 
+                 \end{equation}
+                \end{itemize}
+            \item Adaptive centering approach (Random Effects Model with WS effect only)
+                \begin{itemize}
+                    \item Homogeneous:
+                    \begin{equation}
+                    Y_{ij}^* = \beta_{0} + \beta_{WS}(x_{ij} - \bar{x_i}) + v_i + \epsilon_{ijk} 
+                    \end{equation}
+                    \item Heterogeneous:
+                    \begin{equation}
+                    Y_{ij}^* = \beta_{0} + \beta_{WS}(x_{ij} - \bar{x_i}) + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ijk} 
+                  \end{equation}
+                \end{itemize}
+        \end{itemize}  
+
+          
+            
+    \subsection{Data Simulation}
+        For each study, we simulate 1000 datasets of 200 individuals, each with a binary response measured at 10 time points. We generate these 1000 datasets for multiple possible parameter specifications to determine the impact of specific conditions on estimating the treatment effect. The data were generated using the following models and parameters: 
+        \subsubsection{Case 1: Homogeneous Treatment Effect}
+        \begin{itemize}
+            \item We simulate data from the following model: $$Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_i + \epsilon_{ij}$$
+            where:
+            \begin{itemize}
+                \item $x_{ij}$ is a Bernoulli random variable with mean $\bar{x}_i$
+                \item $\bar{x}_i$ is the cumulative density function value of a standard normal random variable for subject $i$
+                \item $v_i \sim  N(0, \sigma^2_v)$ is a random subject effect
+                \item $\epsilon_{ij}$ is sampled from a standard logistic with mean 0 and variance $\frac{\pi^2}{3}$
+                \item $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
+                    \begin{cases}
+                        0 & \text{if } Y_{ij }^* < 0.5\\    
+                        1 & \text{if } Y_{ij }^* \ge 0.5    
+                    \end{cases}$
+            \end{itemize}
+            \item Parameters:
+            \begin{itemize}
+                \item $\beta_0 = -0.5$
+                \item $\beta_{BS} = -0.4, 0, 0.4$
+                \item $\beta_{WS} = -0.4, 0, 0.4$
+                \item Intra-class correlation (ICC) between time points per subject $= 0.3$ \\
+                Note that this implies: $$\sigma^2_v = \sigma^2_e \frac{ICC}{1-ICC} = \frac{\pi^2}{3}\frac{ICC}{1-ICC} = \frac{\pi^2}{3}\frac{0.3}{0.7} = \frac{\pi^2}{7} = 1.41$$
+                \item $corr(\beta_{BS}, \bar{x_i}) = -0.25, 0, 0.25$
+
+                %\textcolor{red}{should include the math about how exactly we are ensuring that the variables are correlated when we simulate the data}
+                
+            \end{itemize}
+            \item We are interested in varying the correlation between the between-subject effect and the random subject effect because a key assumption of the random-effects model is that the random effect must be uncorrelated with any fixed effects. Thus, we want to investigate the effects of satisfying and violating this assumption. 
+            
+            For each true $\beta_{WS} = -0.4, 0, 0.4$, there are 9 combinations of parameters we vary: 
+            \begin{itemize}
+                \item $\beta_{BS} = -0.4, 0, 0.4$
+                \item $corr(v_0,\bar{x}_i) = -0.25, 0, 0.25$
+            \end{itemize} 
+            
+            We create 1000 datasets of 200 subjects each with 10 time points per subject for each $\beta_{WS}$ value to be estimated. In total, there are $3 \times 9 \times 1000 \times 200 \times 100 = \textbf{54,000,000 rows}$  in the final meta-dataset for the homogeneous treatment effect cast. The data contains simulated predictors ($x_{ij}$ and $\bar{x_i}$), random effects $(v_0)$, error terms ($\epsilon_{ij}$), and responses ($Y_{ij}^*$ and $Y_{ij}$).
+        \end{itemize}
+        \subsubsection{Case 2: Heterogeneous Treatment Effect}
+        \begin{itemize}
+            \item We simulate data from the following model: $$Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_{0i} + v_{1i}x_{ij} + \epsilon_{ij}$$
+            where:
+            \begin{itemize}
+                \item $x_{ij}$ is a Bernoulli random variable with mean $\bar{x}_i$
+                \item $\bar{x}_i$ is the cumulative density function value of a standard normal random variable for subject $i$
+                                \item $\epsilon_{ij}$ is sampled from a standard logistic with mean 0 and variance $\frac{\pi^2}{3}$
+                \item $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
+                    \begin{cases}
+                        0 & \text{if } Y_{ij }^* < 0.5\\    
+                        1 & \text{if } Y_{ij }^* \ge 0.5    
+                    \end{cases}$
+            \end{itemize}
+            \item Parameters:
+            \begin{itemize} 
+                \item $\beta_0 = -0.5$
+                \item $\beta_{BS} = -0.4, 0, 0.4$
+                \item $\beta_{WS} = -0.4, 0, 0.4$
+                \item $corr(\bar{x}_i, v_0) = -0.25, 0, 0.25$
+                \item $\begin{bmatrix}
+                            v_0 \\
+                            v_1 
+                       \end{bmatrix} \sim N\left( \boldsymbol{\mu}, \boldsymbol{\Sigma}_v \right) \text{ where: } \\
+                       \boldsymbol{\mu} = \begin{bmatrix}
+                                               0  \\
+                                               0 
+                                          \end{bmatrix} \\ \\
+                       \boldsymbol{\Sigma}_v =  
+                    \begin{cases}
+                        \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.362, \text{ corr}(v_0, v_1) = -0.2 \\ 
+                        \implies \Sigma_v = \begin{bmatrix} 0.8225 & -0.2480 \\ -0.2480 & 1.8667 \end{bmatrix} \\ \\
+                        \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.294, \text{ corr}(v_0, v_1) = 0 \\     
+                        \implies \Sigma_v = \begin{bmatrix} 0.8225 & 0 \\ 0 & 1.3708 \end{bmatrix} \\ \\   
+                        \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.234, \text{ corr}(v_0, v_1) = 0.2 \\ 
+                        \implies \Sigma_v = \begin{bmatrix} 0.8225 & 0.1820 \\ 0.1820 & 1.0068 \end{bmatrix}
+                    \end{cases}$ 
+            \end{itemize}
+            \item In the heterogeneous case, for each true $\beta_{WS} = -0,4, 0, 0.4$, there are 27 combinations of parameters we vary:
+            \begin{itemize}
+                \item $\beta_{BS} = -0.4, 0, 0.4$
+                \item $corr(v_0,\bar{x}_i) = -0.25, 0, 0.25$
+                \item $corr(v_0,v_1) = -0.2, 0, 0.2$
+            \end{itemize} 
+            The resulting dataset generated for three true values of the WS effect contains $3 \times 27 \times 1000 \times 200 \times 10 = \textbf{162,000,000 rows}$ for 1000 datasets of 200 subjects each with 10 longitudinal binary observations.
+        \end{itemize}
+
+    \subsection{Sample Data}
+        The following sample data illustrates the meta-dataset of 1000 datasets that we create for each combination of parameters in the homogeneous and heterogeneous treatment effect cases. In the homogeneous case, the sample meta-dataset shown below is actually repeated 9 times for each $\beta_{WS}$ value, and 27 times each in the heterogeneous case, as previously discussed. \\
+        
+        \begin{table}
+        
+        \centering
+        \begin{tabular}{c c c c c c c c}
+                Dataset ID & Subject i & Timepoint j & Y\\
+                1           & 1           & 1   & 0 \\
+                1           & 1           & 2   & 0 \\
+                ...           & ...           & ...   & ... \\
+                1           & 1           & 10   & 1 \\
+                1           & 2           & 1   & 0 \\
+                1           & 2           & 2   & 1 \\
+                ...           & ...           & ...   & ... \\
+                1           & 200           & 10   & 1 \\
+                2           & 1           & 1   & 0 \\
+                ...           & ...           & ...   & ... \\
+                2           & 200           & 10   & 0 \\
+                3           & 1           & 1   & 1 \\
+                ...           & ...           & ...   & ... \\
+                1000           & 200           & 10   & 1 \\
+        \end{tabular}
+        \end{table} 
+        
+        
+    \FloatBarrier
+     
+        
+        
+\section{Simulation Studies: Results \& Discussion}
+    For each parameterization, we fit four models to the meta-dataset of 1000 datasets (200 subjects and 10 time points each) and estimate the average $\beta_{WS}$ estimate, coverage, and rejection rate. These are the metrics by which we compare and evaluate model performance. We define coverage as the percentage of the 1000 datasets where the true value of $\beta_{WS}$ lies in the $95\%$ confidence interval for $\hat{\beta}_{WS}$. Power (rejection) represents the probability of rejecting the null hypothesis of $\beta_{WS} = 0$ given that the alternative hypothesis $\beta_{WS} \neq 0$ is true. In general, we prefer models with higher coverage, higher power, and average estimates that are as close as possible to the true value of the effect (in this case $\beta_{WS}$).
+
+    Below we describe the results of the two simulation studies and provide analysis for specific interesting patterns that emerge.
+    
+    \subsection{Homogeneous Treatment Effect}
+        %\textbf{Homog first page red:} 
+        \begin{table}[ht]
+        \centering
+        \caption{Conditional Logistic Regression and Random Intercept Model without BS/WS Decomposition on Homogeneous Data with $\beta_{WS} = -0.4$}
+            \begin{tabular}{|r r || r r r | r r r| } %{ |p{1.5cm}|p{1.5cm}||{3cm}|p{2cm}|p{2cm}| } 
+                \hline
+                \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{} & \multicolumn{3}{c|}{Random Intercept Model}\\ 
+                \multicolumn{2}{|c||}{Specifications} & \multicolumn{3}{c|}{Conditional Logistic Regression} & \multicolumn{3}{c|}{without BS/WS Decomposition} \\
+                \hline
+                $corr(v_i,\bar{x_i})$ & $\beta_{BS}$ & avg $\hat{\beta}_{WS}$ & coverage & rejection & avg $\hat{\beta}_{WS}$ & coverage & rejection \\
+                \hline 
+                -0.25	&-0.40  &-0.408 &0.95 &0.75 &-0.522	&0.87	&0.95 \\
+                -0.25	&0.00  	&-0.400 &0.96 &0.72 &-0.470	&0.93	&0.92 \\
+                -0.25	&0.40  	&-0.403 &0.96 &0.75 &-0.424	&0.95	&0.87 \\
+                0.00	&-0.40  &-0.398 &0.95 &0.73	&-0.397	&0.92	&0.78 \\
+                0.00	&0.00  	&-0.400 &0.94 &0.74 &-0.352	&0.93	&0.70 \\
+                0.00	&0.40  	&-0.402 &0.96 &0.76 &-0.309	&0.90	&0.61 \\
+                0.25	&-0.40  &-0.400 &0.96 &0.74	&-0.284	&0.87	&0.50 \\
+                0.25	&0.00  	&-0.404 &0.95 &0.75 &-0.241	&0.79	&0.39 \\
+                0.25    &0.40   &-0.401 &0.96 &0.74 &-0.205 &0.71   &0.31 \\
+                \hline
+            \end{tabular}
+        \caption*{(subset of appendix Table A)}    
+    \end{table} 
+
+      \begin{table}[ht]
+        \centering
+        \caption{Random Intercept Model with BS/WS Decomposition and Adaptive Centering Approach on Homogeneous Data with $\beta_{WS} = -0.4$}
+            \begin{tabular}{|r r || r r r | r r r| } %{ |p{1.5cm}|p{1.5cm}||{3cm}|p{2cm}|p{2cm}| } 
+                \hline
+                \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{Random Intercept Model} & \multicolumn{3}{c|}{}\\ 
+                \multicolumn{2}{|c||}{Specifications} & \multicolumn{3}{c|}{with BS/WS Decomposition} & \multicolumn{3}{c|}{Adaptive Centering Approach} \\
+                \hline
+                $corr(v_i,\bar{x_i})$ & $\beta_{BS}$ & avg $\hat{\beta}_{WS}$ & coverage & rejection & avg $\hat{\beta}_{WS}$ & coverage & rejection \\
+                \hline 
+                -0.25	&-0.40	&-0.407 &0.95 &0.77 &-0.403 &0.95 &0.77 \\
+                -0.25	&0.00	&-0.399 &0.95 &0.76 &-0.397 &0.95 &0.75 \\
+                -0.25	&0.40	&-0.399 &0.95 &0.77 &-0.399 &0.95 &0.77 \\
+                0.00	&-0.40	&-0.395 &0.94 &0.73 &-0.394 &0.94 &0.73 \\
+                0.00	&0.00	&-0.399 &0.94 &0.76 &-0.399 &0.94 &0.76 \\
+                0.00	&0.40	&-0.402 &0.96 &0.77 &-0.402 &0.96 &0.77 \\
+                0.25	&-0.40	&-0.401 &0.95 &0.76 &-0.402 &0.95 &0.76 \\
+                0.25	&0.00	&-0.404 &0.94 &0.77 &-0.406 &0.94 &0.77 \\
+                0.25    &0.40   &-0.403 &0.96 &0.76 &-0.405 &0.96 &0.76 \\
+                \hline 
+            \end{tabular}
+        \caption*{(subset of appendix Table A)}
+    \end{table} 
+
+        When there is a homogeneous treatment effect in the data, the conditional logistic regression model (fixed-effects approach) gives good estimates of $\beta_{WS}$ and has good coverage, which is illustrated in Table 1 for when $\beta_{WS} = -0.4$. This pattern also holds for $\beta_{WS} = 0$ and $\beta_{WS} = 0.4$ and for all values of $\beta_{BS}$ as shown in Table B and Table C in the appendix. The conditional logistic regression model stratifies the sample by subject and uses conditional maximum likelihood to estimate its parameters. Given the conditioning on each stratum, i.e. each subject, this method will naturally attempt to estimate the average within-subject effect. 
+        
+        The random intercept model without the BS-WS decomposition performs poorly in general. It results in biased estimates, reduced coverage, and reduced power compared to the other models, as illustrated in Table 1. Because this model only estimates a single treatment effect, it assumes that the within-subject effect and between-subject effects are equal, so the estimate is a mixture of both components. This implies a violation of the random effects model assumption of independence between the treatment variable $\bar{x_i}$ and the random effect whenever $corr(\bar{x_i}, v_i) \neq 0$, a pattern also illustrated in Table 1. Specifically, when the random intercept $v_0$ and the BS effect are negatively correlated, this model consistently underestimates $\beta_{WS}$, and when they are positively correlated, it consistently overestimates $\beta_{WS}$, regardless of the true value of $\beta_{WS}$. When $\beta_{BS} = -0.4 = \beta_{WS}$ and $corr(v_i, \bar{x_i}) = 0$,, the model gives a nearly unbiased average estimate. This is the case where the independence assumption is satisfied and where this model is equivalent to its counterpart with a BS/WS decomposition.  
+
+        The random intercept model with BS-WS decomposition (hybrid approach) and the adaptive centering random intercept model perform very well in estimating $\beta_{WS}$ with similar estimates and coverage to the fixed-effects model and a slightly higher power on average. This pattern holds for all values of $\beta_{WS}$ and all values of $\beta_{BS}$ as shown in Table B and Table C in the appendix. These two models result in unbiased estimates both when the fixed effect and random effect are independent and when they are correlated, as exhibited in Table 2. This is an interesting result because mixed-effect models typically require an assumption of independence between the random and fixed effects. However, we see that in the case of a homogeneous treatment effect over subjects, the hybrid model and adaptive centering approach are robust to violations of this assumption when estimating $\beta_{WS}$ because the fixed effect $\beta_{BS}$ that is correlated with the random effect $v_i$ is estimated separately from $\beta_{WS}$.
+
+        In summary, when the treatment effect is homogeneous, the fixed-effects model, the random intercept model with BS-WS decomposition, and the adaptive centering random effects model all perform equally well at estimating the within-subject effect in the data. The random intercept model without BS-WS decomposition is not able to estimate $\beta_{WS}$ well given a homogeneous treatment effect as the fixed effect and random effect are not independent, a key assumption of mixed effect models.  
+
+        
+    \subsection{Heterogeneous Treatment Effect}
+
+    \begin{table}[ht]
+        \centering
+        \caption{Conditional Logistic Regression and Random Effects Model without BS/WS Decomposition on Heterogeneous Data with $\beta_{WS} = -0.4$ and $corr(\bar{x_i}, v_0) = -0.25$}
+            \begin{tabular}{|r r || r r r | r r r| } %{ |p{1.5cm}|p{1.5cm}||{3cm}|p{2cm}|p{2cm}| } 
+                \hline
+                \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{} & \multicolumn{3}{c|}{Random Effects Model}\\ 
+                \multicolumn{2}{|c||}{Specifications} & \multicolumn{3}{c|}{Conditional Logistic Regression} & \multicolumn{3}{c|}{without BS/WS Decomposition} \\
+                \hline
+                $\beta_{BS}$ & $corr(v_0,v_1)$ & avg $\hat{\beta}_{WS}$ & coverage & rejection & avg $\hat{\beta}_{WS}$ & coverage & rejection \\
+                \hline 
+                -0.40	&-0.20	&-0.262	&0.78	&0.43	&-0.400	 &0.79	&0.59 \\
+                -0.40	&0.00	&-0.266	&0.82	&0.42	&-0.392	 &0.81	&0.60 \\
+                -0.40	&0.20	&-0.270	&0.85	&0.42	&-0.397	 &0.87	&0.62 \\ 
+                0.00	&-0.20	&-0.280	&0.83	&0.48	&-0.333	 &0.83	&0.46 \\
+                0.00	&0.00	&-0.284	&0.84	&0.49	&-0.341	 &0.86	&0.48 \\
+                0.00	&0.20	&-0.282	&0.85	&0.47	&-0.338	 &0.89	&0.50 \\
+                0.40	&-0.20	&-0.304	&0.83	&0.52	&-0.279	 &0.84	&0.33 \\
+                0.40	&0.00	&-0.311	&0.84	&0.56	&-0.299	 &0.86	&0.39 \\
+                0.40	&0.20	&-0.308	&0.86	&0.54	&-0.298	 &0.86	&0.43 \\
+                \hline 
+            \end{tabular}
+        \caption*{(subset of appendix Table D)}
+    \end{table}
+
+        %\textbf{Heterog last page orange:} 
+        \subsubsection{Fixed-effects Approach: Conditional Logistic Regression}
+        When there is a heterogeneous treatment effect, the conditional logistic regression model produces very biased estimates of $\beta_{WS}$. It performs much worse than all three random effects models, even under parameter specifications where the other models perform poorly (see Tables D-L in the appendix). For example, we see in Table 3 that the random intercept model without BS/WS decomposition gives biased estimates of $\beta_{WS}$ when the true $\beta_{BS} = 0$ or $0.4$, with estimates around $-0.33$ and $-0.29$ respectively. However, the conditional logistic regression estimates are around $-0.30$ or less for all values of $\beta_{BS}$. The fixed-effects model also produces the worst coverage in all cases, especially when $\beta_{BS}$ and $corr(v_0,v_1)$ are both negative. 
+
+        %\textbf{Heterog last page lavender:} 
+        \subsubsection{Random Effects Model with BS/WS Decomposition}
+        The random effects model with BS-WS decomposition consistently results in the most unbiased estimates of $\beta_{WS}$ compared to all other models, as illustrated in Table 4. This is true in general for all parameterization cases (Table 5) and is a sensible result given that the data were simulated from this model. More interestingly, the above pattern continues to hold for all values of $corr(\bar{x_i},v_0) = -0.25, 0, 0.25$ given a heterogeneous treatment effect in addition to in the homogeneous treatment scenario. A key assumption of the mixed effects model is that the fixed effects and random effects should be uncorrelated and independent. However, we observe in all panels and columns of Table 5 that the random effects model with a decomposition of between-subject and within-subject effects can excellently estimate $\beta_{WS}$ regardless of $corr(\bar{x_i},v_0)$, meaning that the hybrid model is still robust to violations of this independence assumption when there is a heterogeneous treatment effect. 
+    
+    \begin{table}[ht]
+    \centering
+    \caption{Random Effects Model With BS/WS Decomposition on \\Heterogeneous Data: Average Estimates of $\beta_{WS}$}
+        \begin{tabular}{|r r || r r r |} %{ |p{1.5cm}|p{1.5cm}||{3cm}|p{2cm}|p{2cm}| } 
+            \hline
+            \multicolumn{2}{|c||}{Specifications} & \multicolumn{3}{c|}{Panel A: $\beta_{WS} = -0.4$} \\
+            \hline
+            $\beta_{BS}$ & $corr(v_0,v_1)$ & $corr(\bar{x_i}, v_0) = -0.25$ & $corr(\bar{x_i}, v_0) = 0$ & $corr(\bar{x_i}, v_0) = 0.25$ \\
+            \hline
+            -0.40	&-0.20	&-0.400	&-0.400	&-0.405 \\
+            -0.40	&0.00	&-0.399	&-0.390	&-0.393 \\
+            -0.40	&0.20	&-0.401	&-0.396	&-0.391 \\
+            0.00	&-0.20	&-0.400	&-0.404	&-0.391 \\ 
+            0.00	&0.00	&-0.397	&-0.391	&-0.404 \\
+            0.00	&0.20	&-0.386	&-0.397	&-0.393 \\
+            0.40	&-0.20	&-0.405	&-0.406	&-0.382 \\
+            0.40	&0.00	&-0.405	&-0.400	&-0.400 \\
+            0.40	&0.20	&-0.393	&-0.400	&-0.388 \\
+            \hline
+            \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{Panel B: $\beta_{WS} = 0$} \\
+            \hline
+            -0.40	&-0.20	&0.010	&0.000	&0.012 \\
+            -0.40	&0.00	&0.005	&0.008	&0.011 \\
+            -0.40	&0.20	&-0.003	&0.010	&0.004 \\
+            0.00	&-0.20	&0.010	&-0.005	&0.005 \\
+            0.00	&0.00	&-0.002	&0.005	&0.003 \\
+            0.00	&0.20	&-0.002	&0.001	&0.008 \\
+            0.40	&-0.20	&0.006	&-0.002	&-0.004 \\
+            0.40	&0.00	&0.000	&-0.001	&-0.003 \\
+            0.40	&0.20	&-0.006	&0.000	&0.001 \\
+            \hline
+            \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{Panel B: $\beta_{WS} = 0.4$} \\
+            \hline
+            -0.40	&-0.20	&0.404	&0.416	&0.401 \\
+            -0.40	&0.00	&0.403	&0.414	&0.393 \\
+            -0.40	&0.20	&0.407	&0.402	&0.407 \\
+            0.00	&-0.20	&0.404	&0.401	&0.402 \\
+            0.00	&0.00	&0.402	&0.408	&0.409 \\
+            0.00	&0.20	&0.407	&0.390	&0.406 \\
+            0.40	&-0.20	&0.403	&0.387	&0.391 \\
+            0.40	&0.00	&0.411	&0.399	&0.399 \\
+            0.40	&0.20	&0.396	&0.388	&0.418 \\
+            \hline
+        \end{tabular}
+    \caption*{(subset of appendix Tables D-L)}
+    \end{table}
+    
+
+
+        %\textbf{Heterog dark purple:} 
+        \subsubsection{Random Effects Model without BS/WS Decomposition}        
+        In contrast to the homogeneous treatment effect case, the random effects model with no BS/WS decomposition outperforms the conditional logistic regression model (Table 3). Specifically, it results in unbiased estimates and high power only in cases where $\beta_{BS}$ and $\beta_{WS}$ are equal. In particular, we see in Panel A of Table 6 that when $\beta_{WS} = -0.4$, the least biased estimates result when $\beta_{BS} = \beta_{WS} = -0.4$. When $\beta_{BS} = 0$, the estimates of $\beta_{WS}$ are somewhat biased, and when $\beta_{BS} = 0.4$, this model produces the most biased estimates. This pattern also holds true for $\beta_{WS} = 0$ (Panel B) and $\beta_{WS} = 0.4$ (Panel C). Specifically, when $\beta_{WS} = 0$, the model's estimates given $\beta_{BS} = -0.4$ or $0.4$ are equally as bad, as shown in Panel B of Table 6. However, it is important to note that even when this model produced biased estimates, it still performed better than the fixed effects model under all circumstances. 
+        
+        This empirical pattern is reasonable given the nature of the data. By definition, when $\beta_{WS} = \beta_{BS}$ in Equation 14, the equation simplifies to Equation 12. Since the data were simulated from the hybrid model (Equation 14), it makes sense that the random effects model without decomposition performs well under the condition of $\beta_{WS} = \beta_{BS}$. Furthermore, when the vanilla random effects model is equivalent to the hybrid model (when $\beta_{BS} = \beta_{WS}$, it exhibits the same robustness as the fixed effect-random effect independence assumption. This is also shown in the bold rows Table 6, where, given that $\beta_{WS} = \beta_{BS}$, we see unbiased estimates of $\beta_{WS}$ for all values of $corr(\bar{x_i},v_0)$ (BS corr) rather than for only $corr(\bar{x_i},v_0) = 0$.
+        
+        \begin{table}[ht]
+        \centering
+        \caption{Random Effects Model without BS/WS Decomposition on Heterogeneous Data: Average Estimates of $\beta_{WS}$}
+            \begin{tabular}{|r r || r r r |} %{ |p{1.5cm}|p{1.5cm}||{3cm}|p{2cm}|p{2cm}| } 
+                \hline
+                \multicolumn{2}{|c||}{Specifications} & \multicolumn{3}{c|}{Panel A: $\beta_{WS} = -0.4$} \\
+                \hline
+                $\beta_{BS}$ & $corr(v_0,v_1)$ & $corr(\bar{x_i}, v_0) = -0.25$ & $corr(\bar{x_i}, v_0) = 0$ & $corr(\bar{x_i}, v_0) = 0.25$ \\
+                \hline
+                -0.40	&-0.20	&\textbf{-0.400}	&\textbf{-0.399}	&\textbf{-0.402} \\
+                -0.40	&0.00	&\textbf{-0.392}	&\textbf{-0.400}	&\textbf{-0.393} \\
+                -0.40	&0.20	&\textbf{-0.397}	&\textbf{-0.397}	&\textbf{-0.389} \\
+                0.00	&-0.20	&-0.333	&-0.340	&-0.326 \\
+                0.00	&0.00	&-0.341	&-0.335	&-0.348 \\
+                0.00	&0.20	&-0.338	&-0.349	&-0.348 \\ 
+                0.40	&-0.20	&-0.279	&-0.272	&-0.258 \\
+                0.40	&0.00	&-0.299	&-0.299	&-0.290 \\
+                0.40	&0.20	&-0.298	&-0.311	&-0.294 \\
+                \hline
+                \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{Panel B: $\beta_{WS} = 0$} \\
+                \hline
+                -0.40	&-0.20	&-0.057	&-0.069	&-0.051 \\
+                -0.40	&0.00	&-0.048	&-0.054	&-0.046 \\
+                -0.40	&0.20	&-0.045	&-0.041	&-0.047 \\
+                0.00	&-0.20	&\textbf{0.012}	&\textbf{-0.008}	&\textbf{0.004} \\
+                0.00	&0.00	&\textbf{0.000}	&\textbf{0.004}	    &\textbf{0.004} \\
+                0.00	&0.20	&\textbf{0.002}	&\textbf{-0.002}	&\textbf{0.003} \\ 
+                0.40	&-0.20	&0.068	&0.063	&0.060 \\
+                0.40	&0.00	&0.052	&0.050	&0.052 \\
+                0.40	&0.20	&0.042	&0.044	&0.052 \\
+                \hline
+                \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{Panel C: $\beta_{WS} = 0.4$} \\
+                \hline
+                -0.40	&-0.20	&0.272	&0.283	&0.274 \\
+                -0.40	&0.00	&0.296	&0.297	&0.283 \\
+                -0.40	&0.20	&0.316	&0.305	&0.308 \\
+                0.00	&-0.20	&0.343	&0.335	&0.338 \\
+                0.00	&0.00	&0.347	&0.352	&0.353 \\
+                0.00	&0.20	&0.359	&0.341	&0.353 \\
+                0.40	&-0.20	&\textbf{0.405}	&\textbf{0.389}	&\textbf{0.393} \\
+                0.40	&0.00	&\textbf{0.409}	&\textbf{0.395}	&\textbf{0.398} \\
+                0.40	&0.20	&\textbf{0.395}	&\textbf{0.387}	&\textbf{0.420} \\
+                \hline
+            \end{tabular}
+        \caption*{(subset of appendix Tables D-L)}
+        \end{table}
+        
+    
+         %\textbf{Heterog last page red:} 
+        \subsubsection{Adaptive Centering Random Effects Model}
+        
+        In Table 6, we see that the adaptive centering random effects model with WS effect only results in unbiased estimates only when $\beta_{BS} = 0$ and regardless of $\beta_{WS}$ values. The estimates are slightly biased when $\beta_{BS} \neq 0$, but they are still better estimates than those of the conditional logistic regression model in all cases. Similar to the random effects model without decomposition, the adaptive centering model (Equation 16) can theoretically be simplified to the hybrid model (Equation 14) by substituting $\beta_{BS} = 0$, which validates the empirical results seen in Table 6. Once more, these results hold for all values of $corr(\bar{x_i},v_0)$, so the adaptive centering model is robust to violations of the independence assumption when $\beta_{BS} = 0$. This is in contrast to the homogeneous treatment effect case, where this model performed well for all values of $\beta_{BS}$.
+        
+        
+
+
+        \begin{table}[ht]
+        \centering
+        \caption{Adaptive Centering Approach on Heterogeneous Data: \\Average Estimates of $\beta_{WS}$}
+            \begin{tabular}{|r r || r r r |} %{ |p{1.5cm}|p{1.5cm}||{3cm}|p{2cm}|p{2cm}| } 
+                \hline
+                \multicolumn{2}{|c||}{Specifications} & \multicolumn{3}{c|}{Panel A: $\beta_{WS} = -0.4$} \\
+                \hline
+                $\beta_{BS}$ & $corr(v_0,v_1)$ & $corr(\bar{x_i}, v_0) = -0.25$ & $corr(\bar{x_i}, v_0) = 0$ & $corr(\bar{x_i}, v_0) = 0.25$ \\
+                \hline
+                -0.40	&-0.20	&-0.359	&-0.358	&-0.366 \\
+                -0.40	&0.00	&-0.365	&-0.348	&-0.356 \\ 
+                -0.40	&0.20	&-0.367	&-0.359	&-0.355 \\
+                0.00	&-0.20	&\textbf{-0.402}	&\textbf{-0.402}	    &\textbf{-0.391} \\
+                0.00	&0.00	&\textbf{-0.398}	&\textbf{-0.393}	&\textbf{-0.403} \\ 
+                0.00	&0.20	&\textbf{-0.388}	&\textbf{-0.397}	&\textbf{-0.391} \\
+                0.40	&-0.20	&-0.448	&-0.451	&-0.427 \\
+                0.40	&0.00	&-0.442	&-0.436	&-0.441 \\
+                0.40	&0.20	&-0.429	&-0.434	&-0.424\\
+                \hline
+                \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{Panel B: $\beta_{WS} = 0$} \\
+                \hline
+                -0.40	&-0.20	&0.044	&0.035	&0.043 \\
+                -0.40	&0.00	&0.033	&0.041	&0.041 \\
+                -0.40	&0.20	&0.023	&0.039	&0.032 \\
+                0.00	&-0.20	&\textbf{0.008}	&\textbf{-0.004}	&\textbf{0.003} \\
+                0.00	&0.00	&\textbf{-0.004}	&\textbf{0.004}	    &\textbf{0.002} \\
+                0.00	&0.20	&\textbf{-0.005}	&\textbf{0.002}	    &\textbf{0.011} \\
+                0.40	&-0.20	&-0.031	&-0.039	&-0.040 \\
+                0.40	&0.00	&-0.036	&-0.031	&-0.036 \\
+                0.40	&0.20	&-0.037	&-0.027	&-0.033 \\
+                \hline
+                \multicolumn{2}{|c||}{} & \multicolumn{3}{c|}{Panel B: $\beta_{WS} = 0.4$} \\
+                \hline
+                -0.40	&-0.20	&0.433	&0.444	&0.428 \\
+                -0.40	&0.00	&0.426	&0.440	&0.418 \\
+                -0.40	&0.20	&0.428	&0.426	&0.430 \\
+                0.00	&-0.20	&\textbf{0.401}	&\textbf{0.401}	    &\textbf{0.400} \\
+                0.00	&0.00	&\textbf{0.401}	&\textbf{0.407}	    &\textbf{0.409} \\
+                0.00	&0.20	&\textbf{0.405}	&\textbf{0.390}	    &\textbf{0.407} \\
+                0.40	&-0.20	&0.370	&0.357	&0.358 \\
+                0.40	&0.00	&0.383	&0.372	&0.372 \\
+                0.40	&0.20	&0.369	&0.363	&0.388 \\
+                \hline
+            \end{tabular}
+        \caption*{(subset of appendix Tables D-L)}
+        \end{table}
+    
+ %\textbf{Heterog light blue:} 
+        When the within-subject effect is 0.4, the random effects model with BS-WS decomposition and the adaptive centering random effects model have very similar coverage and power to each other for all other parameter specification combinations (Appendix Tables J, K, L). Additionally, the random effects models with and without the BS-WS decomposition have similar coverage and power when the within-subject effect is 0 (Appendix Tables G, H, I).  
+        
+\section{Conclusion}
+
+    The purpose of this work was to empirically compare fixed-effects and random-effects models for estimating the within-subject effect of clustered longitudinal binary data. In particular, we investigated the role of homogeneous versus heterogeneous treatment effects on the model performance, the impact of decomposing the treatment effect into between-subject and within-subject components, and the robustness of these models to violations of independence assumptions.
+    
+     We conducted simulation studies by generating meta-datasets of 1000 datasets each with an underlying homogeneous and heterogeneous treatment effect. We first fit a conditional logistic regression model (fixed-effects approach) to both data types and found that it works well only under a homogeneous treatment effect. In contrast, the mixed-effects model with BS/WS decomposition estimated the within-subject effect very well in both homogeneous and heterogeneous cases. It even performed well when the fixed-effect and random-effect terms were correlated, a violation of the independence assumption. In a real-world setting where the homogeneity or heterogeneity of a treatment effect is unknown, one will be much better off blindly fitting a mixed-effects model with BS/WS decomposition to the data than a simple fixed-effects approach in terms of within-subject effect estimability. Similarly, the mixed-effects model without decomposition and the adaptive centering models also perform well and robustly when they are equivalent to the mixed-effects model with BS/WS decomposition, i.e. when $\beta_{BS} = \beta_{WS}$ and when $\beta_{BS} = 0$ respectively. However, we note that the mixed effects model without decomposition is only robust to the independence assumption violations under a heterogeneous treatment effect and not when the treatment effect is homogeneous.
+
+     Fixed-effects models are often blindly applied by economists who feel constrained by the independence assumptions of mixed-effects models. In this paper, we illustrated two important findings to suggest that fixed-effects solution may not always be appropriate in estimating the within-subject effect. First, the conditional logistic regression model is not able to handle treatment effect heterogeneity in the data, which is a common phenomenon in real-world data. Second, the mixed-effects models, especially with a between-within decomposition of the treatment effect, are robust to violations of the independence assumption AND estimate the within-subject effect well in both homogeneous and heterogeneous treatment effect cases.
+    
+    \subsection{Future Directions}
+    Moving forward, one may consider a variety of directions in which to enhance this work. We note that there are potential limitations of time invariance in the models used in this paper, and this should definitely be explored in the future. It would be useful to apply these models to multinomial data or data from any other distribution (Poisson, Negative Binomial, etc.) with corresponding GLMs to see if similar or different patterns result. It would also be interesting to consider alternative fixed-effects approaches to modeling clustered data and compare them to the conditional logistic regression approach in this paper. Finally, one could construct different variations of the mixed-effects models, perhaps with other types of treatment effect decomposition, to see if any of these models result in improved performance over those tested in this paper. 
+ 
+    
+   
+
+
+\newpage
+
+
+%\addcontentsline{toc}{section}{References}
+\bibliographystyle{apalike}
+\bibliography{citations}
+
+\newpage
+
+
+
+
+\section{Appendix}
+
+
+\end{document}

@@ -1,0 +1,40 @@
+\begin{thebibliography}{}
+
+\bibitem[Agresti, 2015]{agresti2015foundations}
+Agresti, A. (2015).
+\newblock {\em Foundations of Linear and Generalized Linear Models}.
+\newblock Wiley Series in Probability and Statistics. Wiley.
+
+\bibitem[Bates et~al., 2015]{lme4}
+Bates, D., M{\"a}chler, M., Bolker, B., and Walker, S. (2015).
+\newblock Fitting linear mixed-effects models using {lme4}.
+\newblock {\em Journal of Statistical Software}, 67(1):1--48.
+
+\bibitem[Hedeker and Gibbons, 2006]{gibbons2006longitudinal}
+Hedeker, D. and Gibbons, R. (2006).
+\newblock {\em Longitudinal Data Analysis}.
+\newblock Wiley Series in Probability and Statistics. Wiley.
+
+\bibitem[Neuhaus and Kalbfleisch, 1998]{10.2307/3109770}
+Neuhaus, J.~M. and Kalbfleisch, J.~D. (1998).
+\newblock Between- and within-cluster covariate effects in the analysis of
+  clustered data.
+\newblock {\em Biometrics}, 54(2):638--645.
+
+\bibitem[{R Core Team}, 2021]{r-main}
+{R Core Team} (2021).
+\newblock {\em R: A Language and Environment for Statistical Computing}.
+\newblock R Foundation for Statistical Computing, Vienna, Austria.
+
+\bibitem[Raudenbush, 2009]{10.1162/edfp.2009.4.4.468}
+Raudenbush, S.~W. (2009).
+\newblock {Adaptive Centering with Random Effects: An Alternative to the Fixed
+  Effects Model for Studying Time-Varying Treatments in School Settings}.
+\newblock {\em Education Finance and Policy}, 4(4):468--491.
+
+\bibitem[Therneau, 2021]{survival-package}
+Therneau, T.~M. (2021).
+\newblock {\em A Package for Survival Analysis in R}.
+\newblock R package version 3.2-13.
+
+\end{thebibliography}
