@@ -17,57 +17,39 @@
 
 \begin{titlepage}
     \begin{center}
-       \vspace{0cm}
-       \hspace{0cm}
-       \textbf{\underline{Master’s Paper of the Department of Statistics, the University of Chicago}}
-    
-        
-       \vspace{0.25cm}
+        \vspace{0cm}
+        \hspace{0cm}
+        \textbf{\underline{Master’s Paper of the Department of Statistics, the University of Chicago}}
+        \vspace{0.25cm}
         (Internal departmental document only, not for circulation. Anyone wishing to publish or cite any portion therein must have the express, written permission of the author.)
-            
-       \vspace{3cm}
-    
-       \Huge{\textbf{Fixed-Effects vs. Random-Effects Models for Clustered Longitudinal Binary Outcomes}}
-       
-       \vspace{3cm}
-       \huge{Madhuri Raman}
-
-       \vspace{3cm}
-
-       
-       \LARGE{Advisors: Dr. Donald Hedeker, Dr. Robert D. Gibbons, \\ Dr. Dan L. Nicolae}
-  
-       \vspace{2cm}
-
+        \vspace{3cm}
+        \Huge{\textbf{Fixed-Effects vs. Random-Effects Models for Clustered Longitudinal Binary Outcomes}}
+        \vspace{3cm}
+        \huge{Madhuri Raman}
+        \vspace{3cm}
+        \LARGE{Advisors: Dr. Donald Hedeker, Dr. Robert D. Gibbons, \\ Dr. Dan L. Nicolae}
+        \vspace{2cm}
         \LARGE{Approved:}  
         \rule{9cm}{0.15mm} 
         \vspace{0.1cm}
         \newline
-        
-        % \rule{11.5cm}{0.15mm}
         \vspace{0.1cm}
         \LARGE{Date:}
         \rule{10cm}{0.15mm}
-
         \vspace{1cm}
         \LARGE{April 12, 2023}
- 
-        
-   \end{center}
+        \end{center}
 \end{titlepage}
 
 \begin{abstract}
-
     In statistical studies of correlated data, there is often a debate over whether to use fixed-effects or random-effects models. We perform two simulation studies to empirically compare four different models of clustered longitudinal binary data. The goal of these studies is twofold: (1) to compare the four models in terms of estimation of the within-subject effect and (2) to evaluate each model's performance given a homogeneous vs. heterogeneous treatment effect. Collectively, the evidence suggests that under a homogeneous treatment effect, the fixed-effects and random-effects solutions both perform well in estimating the within-subject effect. However, when there is heterogeneity in the treatment effect, the random-effects models, particularly with a decomposition of between-subject and within-subject effects, are superior to the fixed-effects approach, demonstrating that a fixed-effects solution cannot handle treatment heterogeneity in the data.  
 \end{abstract}
 
 \tableofcontents
 \begin{appendices}
-
 \end{appendices}
+
 \newpage
-
-
 
 \section{Introduction and Background}
     In this paper, we are interested in comparing different regression methods for modeling clustered longitudinal binary data. First, we will introduce logistic regression and mixed-effects models which will serve as the framework for the four models we will develop and test in this paper. Next, we define key terms and ideas that will feature in our hypothesized models for testing, including the between-within decomposition and homogeneous vs. heterogeneous treatment effects. Finally, we will describe two simulation studies performed to empirically evaluate the statistical properties of each model on clustered longitudinal binary data. The goal of these studies is to compare the four models' performances given homogeneous and heterogeneous treatment effects. 
@@ -89,7 +71,6 @@
     P(Y_i = 1) = \pi_i = \frac{exp(x_i^T\beta)}{1+exp(x_i^T\beta)} = \frac{1}{1+exp(-x_i^T\beta)} = \psi(x_i^T\beta)
     \end{equation} 
 
-       
     \subsection{Conditional Logistic Regression}
     A key assumption for the traditional logistic regression model is that the observations must be independent of each other. However, in the case of longitudinal data, as discussed earlier, the data are often correlated by nature and violate the independence assumption. To rectify this while maintaining a fixed-effects solution, we can use a conditional logistic regression model [\citealt{agresti2015foundations}]. This model assumes stratification of the data by computing the conditional likelihood of the data given each stratum and maximizing the overall conditional likelihood to optimize the parameters. The model is specified by: 
     \begin{equation}
@@ -111,15 +92,14 @@
         Y_{ij}^* = x_i^T\beta + v_0 + v_1x_{ij} + \epsilon_{ij} \;\;\;\; \text{[Heterogeneous Treatment Effect]}
     \end{equation} 
     where $Y_{ij}^*$ is the latent response probability (i.e. $P(Y_{ij} = 1)$) and $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
-                    \begin{cases}
-                        0 & \text{if } Y_{ij }^* < 0.5\\    
-                        1 & \text{if } Y_{ij }^* \ge 0.5    
-                    \end{cases}$ 
+        \begin{cases}
+            0 & \text{if } Y_{ij }^* < 0.5\\    
+            1 & \text{if } Y_{ij }^* \ge 0.5    
+        \end{cases}$ 
 
     The random intercept model (Equation 6) adds a constant term $v_0 \sim N(0, \sigma^2_v)$ to the intercept to account for the correlation between data points and homogeneous treatment effects. The random intercept and slope model (Equation 7) additionally includes a random slope term $v_1x_{ij}$ which varies the overall slope to model treatment heterogeneity. In this case, the random intercept and slope are jointly distributed from a bivariate normal distribution with mean 0 and covariance matrix defined by $\sigma^2_{v_0}, \sigma^2_{v_1},$ and $corr(v_0, v_1)$. The variances $\sigma^2_{v_0}$ and $\sigma^2_{v_1}$ are dependent on the variable correlations between data points for each individual [\citealt{gibbons2006longitudinal}]. 
     
     \subsection{Between-Within Decomposition} 
-
     In the context of correlated data, specifically with a dynamic time-varying treatment, we explore the estimation of between-subject effects and within-subject effects [\citealt{10.2307/3109770}]. We can decompose the overall treatment effect $\beta x_{ij}$ into two uniquely estimable components: (1) the between-subject component $ \beta_{BS}\bar{x_i}$ and (2) the within-subject component $\beta_{WS}(x_{ij} - \bar{x_i})$. The mixed-effects model with between-within decomposition is the following: \begin{equation} Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ij} \end{equation} which we will test in two simulation studies in this paper. \\
 
     \subsubsection{Adaptive Centering Approach}
@@ -128,6 +108,7 @@
     
 \section{Methodology}
     We conducted two simulation studies to evaluate the performance of four different models in estimating the within-subject effect. For each study, we worked with a large meta-dataset of 1000 datasets constructed under several different parameter specifications. Each dataset consists of 200 subjects repeatedly measured at 10 time points. In the first study, we assume a homogeneous treatment effect, where the effect of the treatment is the same for all individuals, who are each considered a cluster in this context. In the second study, we modify this assumption to account for treatment effect heterogeneity. Our goal in doing so is to not only compare the different models to each other but also to see how each performs on the data given homogeneous vs. heterogeneous treatment effects. 
+    
     \subsection{Models of Interest}
         Using R Statistical Software (v4.1.2; \citealt{r-main}), we fit four models of interest to the data generated under both homogeneous and heterogeneous treatment effects. The conditional logistic regression model was implemented via clogit in the survival R package (v3.2.13; \citealt{survival-package}) while the three mixed-effects models were implemented using the glmer function from the lme4 R package (v1.1.27.1; \citealt{lme4}). Below we specify the models in each of these cases:
         
@@ -146,117 +127,114 @@
                  Y_{ij}^* = \beta_{0} + \beta x_{ij} + v_{0i} + v_{1i}x_{ij} + \epsilon_{ijk} 
                  \end{equation}
                  \end{itemize}
-            \item Random Effects Model with BS/WS Decomposition
+            \item Random Effects Model with BS/WS Dec\subsection*{\section*{\section*{}}}omposition
                 \begin{itemize}
                     \item Homogeneous:
-                    \begin{equation}
-                 Y_{ij}^* = \beta_{0} + \beta_{BS}(\bar{x_i}) + \beta_{WS}(x_{ij} - \bar{x_i}) + v_i + \epsilon_{ijk}
-                 \end{equation}
+                        \begin{equation}
+                            Y_{ij}^* = \beta_{0} + \beta_{BS}(\bar{x_i}) + \beta_{WS}(x_{ij} - \bar{x_i}) + v_i + \epsilon_{ijk}
+                        \end{equation}
                     \item Heterogeneous: 
-                    \begin{equation}
-                 Y_{ij}^* = \beta_{0} + \beta_{BS}(\bar{x_i}) + \beta_{WS}(x_{ij} - \bar{x_i}) + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ijk} 
-                 \end{equation}
+                        \begin{equation}
+                            Y_{ij}^* = \beta_{0} + \beta_{BS}(\bar{x_i}) + \beta_{WS}(x_{ij} - \bar{x_i}) + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ijk} 
+                        \end{equation}
                 \end{itemize}
             \item Adaptive centering approach (Random Effects Model with WS effect only)
                 \begin{itemize}
                     \item Homogeneous:
-                    \begin{equation}
-                    Y_{ij}^* = \beta_{0} + \beta_{WS}(x_{ij} - \bar{x_i}) + v_i + \epsilon_{ijk} 
-                    \end{equation}
+                        \begin{equation}
+                            Y_{ij}^* = \beta_{0} + \beta_{WS}(x_{ij} - \bar{x_i}) + v_i + \epsilon_{ijk} 
+                        \end{equation}
                     \item Heterogeneous:
-                    \begin{equation}
-                    Y_{ij}^* = \beta_{0} + \beta_{WS}(x_{ij} - \bar{x_i}) + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ijk} 
-                  \end{equation}
+                        \begin{equation}
+                            Y_{ij}^* = \beta_{0} + \beta_{WS}(x_{ij} - \bar{x_i}) + v_{0i} + v_{1i}(x_{ij}-\bar{x}_i) + \epsilon_{ijk} 
+                        \end{equation}
                 \end{itemize}
         \end{itemize}  
-
-          
             
     \subsection{Data Simulation}
         For each study, we simulate 1000 datasets of 200 individuals, each with a binary response measured at 10 time points. We generate these 1000 datasets for multiple possible parameter specifications to determine the impact of specific conditions on estimating the treatment effect. The data were generated using the following models and parameters: 
         \subsubsection{Case 1: Homogeneous Treatment Effect}
-        \begin{itemize}
-            \item We simulate data from the following model: $$Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_i + \epsilon_{ij}$$
-            where:
             \begin{itemize}
-                \item $x_{ij}$ is a Bernoulli random variable with mean $\bar{x}_i$
-                \item $\bar{x}_i$ is the cumulative density function value of a standard normal random variable for subject $i$
-                \item $v_i \sim  N(0, \sigma^2_v)$ is a random subject effect
-                \item $\epsilon_{ij}$ is sampled from a standard logistic with mean 0 and variance $\frac{\pi^2}{3}$
-                \item $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
-                    \begin{cases}
-                        0 & \text{if } Y_{ij }^* < 0.5\\    
-                        1 & \text{if } Y_{ij }^* \ge 0.5    
-                    \end{cases}$
-            \end{itemize}
-            \item Parameters:
-            \begin{itemize}
-                \item $\beta_0 = -0.5$
-                \item $\beta_{BS} = -0.4, 0, 0.4$
-                \item $\beta_{WS} = -0.4, 0, 0.4$
-                \item Intra-class correlation (ICC) between time points per subject $= 0.3$ \\
-                Note that this implies: $$\sigma^2_v = \sigma^2_e \frac{ICC}{1-ICC} = \frac{\pi^2}{3}\frac{ICC}{1-ICC} = \frac{\pi^2}{3}\frac{0.3}{0.7} = \frac{\pi^2}{7} = 1.41$$
-                \item $corr(\beta_{BS}, \bar{x_i}) = -0.25, 0, 0.25$
-
+                \item We simulate data from the following model: $$Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_i + \epsilon_{ij}$$
+                    where:
+                    \begin{itemize}
+                        \item $x_{ij}$ is a Bernoulli random variable with mean $\bar{x}_i$
+                        \item $\bar{x}_i$ is the cumulative density function value of a standard normal random variable for subject $i$
+                        \item $v_i \sim  N(0, \sigma^2_v)$ is a random subject effect
+                        \item $\epsilon_{ij}$ is sampled from a standard logistic with mean 0 and variance $\frac{\pi^2}{3}$
+                        \item $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
+                            \begin{cases}
+                                0 & \text{if } Y_{ij }^* < 0.5\\    
+                                1 & \text{if } Y_{ij }^* \ge 0.5    
+                            \end{cases}$
+                    \end{itemize}
+                \item Parameters:
+                    \begin{itemize}
+                        \item $\beta_0 = -0.5$
+                        \item $\beta_{BS} = -0.4, 0, 0.4$
+                        \item $\beta_{WS} = -0.4, 0, 0.4$
+                        \item Intra-class correlation (ICC) between time points per subject $= 0.3$ \\
+                            Note that this implies: $$\sigma^2_v = \sigma^2_e \frac{ICC}{1-ICC} = \frac{\pi^2}{3}\frac{ICC}{1-ICC} = \frac{\pi^2}{3}\frac{0.3}{0.7} = \frac{\pi^2}{7} = 1.41$$
+                        \item $corr(\beta_{BS}, \bar{x_i}) = -0.25, 0, 0.25$    
                 %\textcolor{red}{should include the math about how exactly we are ensuring that the variables are correlated when we simulate the data}
-                
+                    \end{itemize}
+                \item We are interested in varying the correlation between the between-subject effect and the random subject effect because a key assumption of the random-effects model is that the random effect must be uncorrelated with any fixed effects. Thus, we want to investigate the effects of satisfying and violating this assumption. 
+            
+                    For each true $\beta_{WS} = -0.4, 0, 0.4$, there are 9 combinations of parameters we vary: 
+                    \begin{itemize}
+                        \item $\beta_{BS} = -0.4, 0, 0.4$
+                        \item $corr(v_0,\bar{x}_i) = -0.25, 0, 0.25$
+                    \end{itemize} 
+            
+                    We create 1000 datasets of 200 subjects each with 10 time points per subject for each $\beta_{WS}$ value to be estimated. In total, there are $3 \times 9 \times 1000 \times 200 \times 100 = \textbf{54,000,000 rows}$  in the final meta-dataset for the homogeneous treatment effect cast. The data contains simulated predictors ($x_{ij}$ and $\bar{x_i}$), random effects $(v_0)$, error terms ($\epsilon_{ij}$), and responses ($Y_{ij}^*$ and $Y_{ij}$).
             \end{itemize}
-            \item We are interested in varying the correlation between the between-subject effect and the random subject effect because a key assumption of the random-effects model is that the random effect must be uncorrelated with any fixed effects. Thus, we want to investigate the effects of satisfying and violating this assumption. 
-            
-            For each true $\beta_{WS} = -0.4, 0, 0.4$, there are 9 combinations of parameters we vary: 
-            \begin{itemize}
-                \item $\beta_{BS} = -0.4, 0, 0.4$
-                \item $corr(v_0,\bar{x}_i) = -0.25, 0, 0.25$
-            \end{itemize} 
-            
-            We create 1000 datasets of 200 subjects each with 10 time points per subject for each $\beta_{WS}$ value to be estimated. In total, there are $3 \times 9 \times 1000 \times 200 \times 100 = \textbf{54,000,000 rows}$  in the final meta-dataset for the homogeneous treatment effect cast. The data contains simulated predictors ($x_{ij}$ and $\bar{x_i}$), random effects $(v_0)$, error terms ($\epsilon_{ij}$), and responses ($Y_{ij}^*$ and $Y_{ij}$).
-        \end{itemize}
+        
         \subsubsection{Case 2: Heterogeneous Treatment Effect}
-        \begin{itemize}
-            \item We simulate data from the following model: $$Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_{0i} + v_{1i}x_{ij} + \epsilon_{ij}$$
-            where:
             \begin{itemize}
-                \item $x_{ij}$ is a Bernoulli random variable with mean $\bar{x}_i$
-                \item $\bar{x}_i$ is the cumulative density function value of a standard normal random variable for subject $i$
-                                \item $\epsilon_{ij}$ is sampled from a standard logistic with mean 0 and variance $\frac{\pi^2}{3}$
-                \item $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
-                    \begin{cases}
-                        0 & \text{if } Y_{ij }^* < 0.5\\    
-                        1 & \text{if } Y_{ij }^* \ge 0.5    
-                    \end{cases}$
+                \item We simulate data from the following model: $$Y_{ij}^* = \beta_0 + \beta_{WS}(x_{ij}-\bar{x}_i) + \beta_{BS}\bar{x}_i + v_{0i} + v_{1i}x_{ij} + \epsilon_{ij}$$
+                where:
+                    \begin{itemize}
+                        \item $x_{ij}$ is a Bernoulli random variable with mean $\bar{x}_i$
+                        \item $\bar{x}_i$ is the cumulative density function value of a standard normal random variable for subject $i$
+                        \item $\epsilon_{ij}$ is sampled from a standard logistic with mean 0 and variance $\frac{\pi^2}{3}$
+                        \item $ 0 < Y_{ij}^* < 1$   $\implies Y_{ij} = 
+                            \begin{cases}
+                                0 & \text{if } Y_{ij }^* < 0.5\\    
+                                1 & \text{if } Y_{ij }^* \ge 0.5    
+                            \end{cases}$
+                    \end{itemize}
+                \item Parameters:
+                    \begin{itemize} 
+                        \item $\beta_0 = -0.5$
+                        \item $\beta_{BS} = -0.4, 0, 0.4$
+                        \item $\beta_{WS} = -0.4, 0, 0.4$
+                        \item $corr(\bar{x}_i, v_0) = -0.25, 0, 0.25$
+                        \item $\begin{bmatrix}
+                                    v_0 \\
+                                    v_1 
+                               \end{bmatrix} \sim N\left( \boldsymbol{\mu}, \boldsymbol{\Sigma}_v \right) \text{ where: } \\
+                               \boldsymbol{\mu} = \begin{bmatrix}
+                                                       0  \\
+                                                       0 
+                                                  \end{bmatrix} \\ \\
+                               \boldsymbol{\Sigma}_v =  
+                            \begin{cases}
+                                \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.362, \text{ corr}(v_0, v_1) = -0.2 \\ 
+                                \implies \Sigma_v = \begin{bmatrix} 0.8225 & -0.2480 \\ -0.2480 & 1.8667 \end{bmatrix} \\ \\
+                                \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.294, \text{ corr}(v_0, v_1) = 0 \\     
+                                \implies \Sigma_v = \begin{bmatrix} 0.8225 & 0 \\ 0 & 1.3708 \end{bmatrix} \\ \\   
+                                \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.234, \text{ corr}(v_0, v_1) = 0.2 \\ 
+                                \implies \Sigma_v = \begin{bmatrix} 0.8225 & 0.1820 \\ 0.1820 & 1.0068 \end{bmatrix}
+                            \end{cases}$ 
+                    \end{itemize}
+                \item In the heterogeneous case, for each true $\beta_{WS} = -0,4, 0, 0.4$, there are 27 combinations of parameters we vary:
+                    \begin{itemize}
+                        \item $\beta_{BS} = -0.4, 0, 0.4$
+                        \item $corr(v_0,\bar{x}_i) = -0.25, 0, 0.25$
+                        \item $corr(v_0,v_1) = -0.2, 0, 0.2$
+                    \end{itemize} 
+                    The resulting dataset generated for three true values of the WS effect contains $3 \times 27 \times 1000 \times 200 \times 10 = \textbf{162,000,000 rows}$ for 1000 datasets of 200 subjects each with 10 longitudinal binary observations.
             \end{itemize}
-            \item Parameters:
-            \begin{itemize} 
-                \item $\beta_0 = -0.5$
-                \item $\beta_{BS} = -0.4, 0, 0.4$
-                \item $\beta_{WS} = -0.4, 0, 0.4$
-                \item $corr(\bar{x}_i, v_0) = -0.25, 0, 0.25$
-                \item $\begin{bmatrix}
-                            v_0 \\
-                            v_1 
-                       \end{bmatrix} \sim N\left( \boldsymbol{\mu}, \boldsymbol{\Sigma}_v \right) \text{ where: } \\
-                       \boldsymbol{\mu} = \begin{bmatrix}
-                                               0  \\
-                                               0 
-                                          \end{bmatrix} \\ \\
-                       \boldsymbol{\Sigma}_v =  
-                    \begin{cases}
-                        \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.362, \text{ corr}(v_0, v_1) = -0.2 \\ 
-                        \implies \Sigma_v = \begin{bmatrix} 0.8225 & -0.2480 \\ -0.2480 & 1.8667 \end{bmatrix} \\ \\
-                        \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.294, \text{ corr}(v_0, v_1) = 0 \\     
-                        \implies \Sigma_v = \begin{bmatrix} 0.8225 & 0 \\ 0 & 1.3708 \end{bmatrix} \\ \\   
-                        \text{ICC}_{v_0} = 0.2, \text{ ICC}_{v_1} = 0.234, \text{ corr}(v_0, v_1) = 0.2 \\ 
-                        \implies \Sigma_v = \begin{bmatrix} 0.8225 & 0.1820 \\ 0.1820 & 1.0068 \end{bmatrix}
-                    \end{cases}$ 
-            \end{itemize}
-            \item In the heterogeneous case, for each true $\beta_{WS} = -0,4, 0, 0.4$, there are 27 combinations of parameters we vary:
-            \begin{itemize}
-                \item $\beta_{BS} = -0.4, 0, 0.4$
-                \item $corr(v_0,\bar{x}_i) = -0.25, 0, 0.25$
-                \item $corr(v_0,v_1) = -0.2, 0, 0.2$
-            \end{itemize} 
-            The resulting dataset generated for three true values of the WS effect contains $3 \times 27 \times 1000 \times 200 \times 10 = \textbf{162,000,000 rows}$ for 1000 datasets of 200 subjects each with 10 longitudinal binary observations.
-        \end{itemize}
 
     \subsection{Sample Data}
         The following sample data illustrates the meta-dataset of 1000 datasets that we create for each combination of parameters in the homogeneous and heterogeneous treatment effect cases. In the homogeneous case, the sample meta-dataset shown below is actually repeated 9 times for each $\beta_{WS}$ value, and 27 times each in the heterogeneous case, as previously discussed. \\
