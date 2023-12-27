@@ -1,0 +1,244 @@
+---
+title: "rmd1"
+output: html_document
+date: '2022-06-16'
+---
+
+```{r}
+
+library(lme4)
+library(survival)
+library(tidyverse)
+library(haven)
+
+
+```
+
+# Load in data
+
+```{r}
+
+# simdat0 <- data.frame(read_sas("../data/homogeneous/homo_out_100d_0.sas7bdat", NULL))
+# simdat04 <- data.frame(read_sas("../data/homogeneous/homo_out_100d_pospt4.sas7bdat", NULL))
+# simdatn04 <- data.frame(read_sas("../data/homogeneous/homo_out_100d_pospt4.sas7bdat", NULL))
+
+# head(simdat, 14)
+
+```
+
+```{r}
+
+fin2 <- integer(250*200*10)
+
+for (zi in 1:250){
+  zv2 <- rep(zi, 200*10) + 750 
+  fin2[((zi-1)*2000 + 1):(zi*2000)] <- zv2
+}
+
+homo_out_250d_n04$ndat <- rep(fin2, 9)
+
+
+
+```
+
+```{r}
+
+simdat <- rbind(homo_out_750d_n04, homo_out_250d_n04)
+
+```
+
+```{r, include=FALSE}
+
+# unique(simdat$ndats)
+# 
+# for (col in 1:ncol(simdat)){
+#   print(col)
+#   print(unique(simdat[1:10,col]))
+#   print("-------")
+# }
+
+# names(simdat)[16]
+
+# sum(simdat$id == simdat$n) # these are the same column btw
+
+```
+
+# Define constants based on SAS data table and reduce df size
+
+```{r}
+
+ndats <- 1000 #simdat$ndats[1]
+npergrp <- simdat$npergrp[1] # then 2 groups
+nsubj <- simdat$nsubj[1] # so 200 subjects total, but we aren't really using/dividing the groups here
+ssbetaWS <- simdat$ssbeta[1] #change back to ssbetaWS
+all_ssbetaBS <- c(simdat$ssbetaBS1[1], simdat$ssbetaBS2[1], simdat$ssbetaBS3[1]) # k
+ntimepoints <- simdat$ntime[1]
+icc <- simdat$icc[1]
+all_covs <- c(simdat$cov1[1], simdat$cov2[1], simdat$cov3[1]) # j
+
+varerr <- pi^2 / 3  # note that atan(1) = pi/4 so atan(1) * 4 = pi. varerr = (atan(1) * 4)**2 / 3
+
+varsub <- varerr * (icc / (1-icc)) # subject variance given the icc and error variance (sigma squared v given icc and sigma squared e).
+
+sdsub <- sqrt(varsub)
+
+simdat_new <- simdat[,-c(1:16, 20)]
+```
+
+```{r, warning = FALSE, message = FALSE}
+
+# j, k, ndat are indicators of the loop for which ssbetaBS and which cov and which dataset we're on. we repeat the 9 combinations for 10 datasets each. 
+
+# adf <- simdat_new[(simdat_new$ndat == 1) & (simdat_new$j == 1) & (simdat_new$k == 1),]
+# summary(glmer(y ~ grp + (1|id), family=binomial, data=adf))$coefficients
+# summary(glmer(y ~ grpdev + (1 + grp|id), family=binomial, data=this_df))$coefficients
+# summary(clogit(y ~ grp + strata(id), data=adf))$coefficients
+# 9 * 200 * 10 * 10
+
+m1.all_estimates_mat <- matrix(nrow = ndats, ncol = length(all_covs)*length(all_ssbetaBS))
+m1.cov_rej_mat <- matrix(0, nrow = 2, ncol = length(all_covs)*length(all_ssbetaBS))
+m2.all_estimates_mat <- matrix(nrow = ndats, ncol = length(all_covs)*length(all_ssbetaBS))
+m2.cov_rej_mat <- matrix(0, nrow = 2, ncol = length(all_covs)*length(all_ssbetaBS))
+m3.all_estimates_mat <- matrix(nrow = ndats, ncol = length(all_covs)*length(all_ssbetaBS))
+m3.cov_rej_mat <- matrix(0, nrow = 2, ncol = length(all_covs)*length(all_ssbetaBS))
+m4.all_estimates_mat <- matrix(nrow = ndats, ncol = length(all_covs)*length(all_ssbetaBS))
+m4.cov_rej_mat <- matrix(0, nrow = 2, ncol = length(all_covs)*length(all_ssbetaBS))
+# m5.all_estimates_mat <- matrix(nrow = ndats, ncol = length(all_covs)*length(all_ssbetaBS))
+# m5.cov_rej_mat <- matrix(0, nrow = 2, ncol = length(all_covs)*length(all_ssbetaBS))
+# m6.all_estimates_mat <- matrix(nrow = ndats, ncol = length(all_covs)*length(all_ssbetaBS))
+# m6.cov_rej_mat <- matrix(0, nrow = 2, ncol = length(all_covs)*length(all_ssbetaBS))
+# m7.all_estimates_mat <- matrix(nrow = ndats, ncol = length(all_covs)*length(all_ssbetaBS))
+# m7.cov_rej_mat <- matrix(0, nrow = 2, ncol = length(all_covs)*length(all_ssbetaBS))
+
+for (dd in 1:ndats){ # for each dataset
+  if (dd %% 100 == 0){
+    print(dd)
+  }
+   
+  this_dfS <- simdat_new[simdat_new$ndat == dd,]
+  condition_num <- 0
+  for (jj in 1:length(all_covs)){
+    # this_df <- this_df[this_df$j == jj,]
+    for (kk in 1:length(all_ssbetaBS)){
+      condition_num <- condition_num + 1 # 1 through 9
+      this_df <- this_dfS[(this_dfS$j == jj) & (this_dfS$k == kk),]
+      this_cov <- all_covs[jj]
+      this_ssbetaBS <- all_ssbetaBS[kk]
+
+      # Homogeneous exposure models
+      m1.out <- glmer(y ~ grp + (1|id), family=binomial, data=this_df) 
+      m2.out <- glmer(y ~ grpmean + grpdev + (1|id), family=binomial, data=this_df) # grpdev = grp - grpmean
+      # m3.out <- glm(y ~ grp, family=binomial, data=this_df) # strata?? vanilla logistic regression. really bad.
+      m3.out <- clogit(y ~ grp + strata(id), data=this_df) # conditional logistic regression model
+      m4.out <- glmer(y ~ grpdev + (1|id), family=binomial, data=this_df) # adaptive centering approach, WS effect only
+      
+      # Heterogeneous exposure models 
+      # m5.out <- glmer(y ~ grp + (1 + grp|id), family=binomial, data=this_df) # heterogeneous exposure version of M1
+      # m6.out <- glmer(y ~ grpmean + grpdev + (1 + grp|id), family=binomial, data=this_df) # heterogeneous exposure version of M2
+      # m7.out <- glmer(y ~ grpdev + (1 + grp|id), family=binomial, data=this_df) # heterogeneous exposure version of M4
+      
+      # M1: Random Intercept model assuming BS=WS effect, no BS/WS decomposition
+      m1.grp.est <- summary(m1.out)$coefficients[2,1]
+      m1.grp.stderr <- summary(m1.out)$coefficients[2,2]
+      m1.upper <- m1.grp.est + qnorm(0.975)*m1.grp.stderr
+      m1.lower <- m1.grp.est - qnorm(0.975)*m1.grp.stderr
+      covers_inrange1 <- ifelse((ssbetaWS > m1.lower) & (ssbetaWS < m1.upper), 1, 0)
+      reject_signif1 <- ifelse((0 < m1.lower) | (0 > m1.upper), 1, 0)
+      m1.all_estimates_mat[dd, condition_num] <- m1.grp.est
+      m1.cov_rej_mat[1, condition_num] <- m1.cov_rej_mat[1, condition_num] + covers_inrange1 # coverage
+      m1.cov_rej_mat[2, condition_num] <- m1.cov_rej_mat[2, condition_num] + reject_signif1 # rejection
+      
+      # M2: Random Intercept model with BS/WS decomposition
+      m2.grpdev.est <- summary(m2.out)$coefficients[3,1]
+      m2.grpdev.stderr <- summary(m2.out)$coefficients[3,2]
+      m2.upper <- m2.grpdev.est + qnorm(0.975)*m2.grpdev.stderr
+      m2.lower <- m2.grpdev.est - qnorm(0.975)*m2.grpdev.stderr
+      covers_inrange2 <- ifelse((ssbetaWS > m2.lower) & (ssbetaWS < m2.upper), 1, 0)
+      reject_signif2 <- ifelse((0 < m2.lower) | (0 > m2.upper), 1, 0)
+      m2.all_estimates_mat[dd, condition_num] <- m2.grpdev.est
+      m2.cov_rej_mat[1, condition_num] <- m2.cov_rej_mat[1, condition_num] + covers_inrange2 # coverage
+      m2.cov_rej_mat[2, condition_num] <- m2.cov_rej_mat[2, condition_num] + reject_signif2 # rejection
+      
+      # M3: Conditional Logistic Regression
+      m3.grp.est <- summary(m3.out)$coefficients[1,1]
+      m3.grp.stderr <- summary(m3.out)$coefficients[1,3]
+      m3.upper <- m3.grp.est + qnorm(0.975)*m3.grp.stderr
+      m3.lower <- m3.grp.est - qnorm(0.975)*m3.grp.stderr
+      covers_inrange3 <- ifelse((ssbetaWS > m3.lower) & (ssbetaWS < m3.upper), 1, 0)
+      reject_signif3 <- ifelse((0 < m3.lower) | (0 > m3.upper), 1, 0)
+      m3.all_estimates_mat[dd, condition_num] <- m3.grp.est
+      m3.cov_rej_mat[1, condition_num] <- m3.cov_rej_mat[1, condition_num] + covers_inrange3 # coverage
+      m3.cov_rej_mat[2, condition_num] <- m3.cov_rej_mat[2, condition_num] + reject_signif3 # rejection
+      
+      # M4: Random Intercept model with Adaptive Centering approach (WS deviation effect only)
+      m4.grpdev.est <- summary(m4.out)$coefficients[2,1]
+      m4.grpdev.stderr <- summary(m4.out)$coefficients[2,2]
+      m4.upper <- m4.grpdev.est + qnorm(0.975)*m4.grpdev.stderr
+      m4.lower <- m4.grpdev.est - qnorm(0.975)*m4.grpdev.stderr
+      covers_inrange4 <- ifelse((ssbetaWS > m4.lower) & (ssbetaWS < m4.upper), 1, 0)
+      reject_signif4 <- ifelse((0 < m4.lower) | (0 > m4.upper), 1, 0)
+      m4.all_estimates_mat[dd, condition_num] <- m4.grpdev.est
+      m4.cov_rej_mat[1, condition_num] <- m4.cov_rej_mat[1, condition_num] + covers_inrange4 # coverage
+      m4.cov_rej_mat[2, condition_num] <- m4.cov_rej_mat[2, condition_num] + reject_signif4 # rejection
+      
+      # # M5: Heterogeneous M1
+      # m5.grp.est <- summary(m5.out)$coefficients[2,1]
+      # m5.grp.stderr <- summary(m5.out)$coefficients[2,2]
+      # m5.upper <- m5.grp.est + qnorm(0.975)*m5.grp.stderr
+      # m5.lower <- m5.grp.est - qnorm(0.975)*m5.grp.stderr
+      # covers_inrange5 <- ifelse((ssbetaWS > m5.lower) & (ssbetaWS < m5.upper), 1, 0)
+      # reject_signif5 <- ifelse((0 < m5.lower) | (0 > m5.upper), 1, 0)
+      # m5.all_estimates_mat[dd, condition_num] <- m5.grp.est
+      # m5.cov_rej_mat[1, condition_num] <- m5.cov_rej_mat[1, condition_num] + covers_inrange5 # coverage
+      # m5.cov_rej_mat[2, condition_num] <- m5.cov_rej_mat[2, condition_num] + reject_signif5 # rejection
+      # 
+      # # M6: Heterogeneous M2
+      # m6.grpdev.est <- summary(m6.out)$coefficients[3,1]
+      # m6.grpdev.stderr <- summary(m6.out)$coefficients[3,2]
+      # m6.upper <- m6.grpdev.est + qnorm(0.975)*m6.grpdev.stderr
+      # m6.lower <- m6.grpdev.est - qnorm(0.975)*m6.grpdev.stderr
+      # covers_inrange6 <- ifelse((ssbetaWS > m6.lower) & (ssbetaWS < m6.upper), 1, 0)
+      # reject_signif6 <- ifelse((0 < m6.lower) | (0 > m6.upper), 1, 0)
+      # m6.all_estimates_mat[dd, condition_num] <- m6.grpdev.est
+      # m6.cov_rej_mat[1, condition_num] <- m6.cov_rej_mat[1, condition_num] + covers_inrange6 # coverage
+      # m6.cov_rej_mat[2, condition_num] <- m6.cov_rej_mat[2, condition_num] + reject_signif6 # rejection
+      # 
+      # # M7: Heterogeneous M4
+      # m7.grpdev.est <- summary(m7.out)$coefficients[2,1]
+      # m7.grpdev.stderr <- summary(m7.out)$coefficients[2,2]
+      # m7.upper <- m7.grpdev.est + qnorm(0.975)*m7.grpdev.stderr
+      # m7.lower <- m7.grpdev.est - qnorm(0.975)*m7.grpdev.stderr
+      # covers_inrange7 <- ifelse((ssbetaWS > m7.lower) & (ssbetaWS < m7.upper), 1, 0)
+      # reject_signif7 <- ifelse((0 < m7.lower) | (0 > m7.upper), 1, 0)
+      # m7.all_estimates_mat[dd, condition_num] <- m7.grpdev.est
+      # m7.cov_rej_mat[1, condition_num] <- m7.cov_rej_mat[1, condition_num] + covers_inrange7 # coverage
+      # m7.cov_rej_mat[2, condition_num] <- m7.cov_rej_mat[2, condition_num] + reject_signif7 # rejection
+      
+      
+    }
+    
+  }
+}
+
+
+```
+
+```{r}
+
+colMeans(m1.all_estimates_mat)
+colMeans(m2.all_estimates_mat)
+colMeans(m3.all_estimates_mat)
+colMeans(m4.all_estimates_mat)
+# colMeans(m5.all_estimates_mat)
+# colMeans(m6.all_estimates_mat)
+# colMeans(m7.all_estimates_mat)
+
+m1.cov_rej_mat/ndats
+m2.cov_rej_mat/ndats
+m3.cov_rej_mat/ndats
+m4.cov_rej_mat/ndats
+# m5.cov_rej_mat/ndats
+# m6.cov_rej_mat/ndats
+# m7.cov_rej_mat/ndats
+
+```
